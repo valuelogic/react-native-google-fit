@@ -42,7 +42,6 @@ public class StepCounter implements OnDataPointListener {
 
     private static final String TAG = "StepCounter";
 
-
     public StepCounter(ReactContext reactContext, GoogleFitManager googleFitManager, Activity activity) {
         this.mReactContext = reactContext;
         this.googleFitManager = googleFitManager;
@@ -53,8 +52,7 @@ public class StepCounter implements OnDataPointListener {
 
         DataSourcesRequest dataSourceRequest = new DataSourcesRequest.Builder()
                 .setDataTypes(DataType.TYPE_STEP_COUNT_DELTA, DataType.TYPE_STEP_COUNT_CUMULATIVE)
-                .setDataSourceTypes( DataSource.TYPE_DERIVED)
-                .build();
+                .setDataSourceTypes(DataSource.TYPE_DERIVED).build();
 
         ResultCallback<DataSourcesResult> dataSourcesResultCallback = new ResultCallback<DataSourcesResult>() {
             @Override
@@ -65,7 +63,7 @@ public class StepCounter implements OnDataPointListener {
                     if (DataType.TYPE_STEP_COUNT_DELTA.equals(type)
                             || DataType.TYPE_STEP_COUNT_CUMULATIVE.equals(type)) {
                         Log.i(TAG, "Register Fitness Listener: " + type);
-                        registerFitnessDataListener(dataSource, type);//DataType.TYPE_STEP_COUNT_DELTA);
+                        registerFitnessDataListener(dataSource, type);// DataType.TYPE_STEP_COUNT_DELTA);
                     }
                 }
             }
@@ -77,11 +75,8 @@ public class StepCounter implements OnDataPointListener {
 
     private void registerFitnessDataListener(DataSource dataSource, DataType dataType) {
 
-        SensorRequest request = new SensorRequest.Builder()
-                .setDataSource(dataSource)
-                .setDataType(dataType)
-                .setSamplingRate(3, TimeUnit.SECONDS)
-                .build();
+        SensorRequest request = new SensorRequest.Builder().setDataSource(dataSource).setDataType(dataType)
+                .setSamplingRate(3, TimeUnit.SECONDS).build();
 
         Fitness.SensorsApi.add(googleFitManager.getGoogleApiClient(), request, this)
                 .setResultCallback(new ResultCallback<Status>() {
@@ -94,40 +89,27 @@ public class StepCounter implements OnDataPointListener {
                 });
     }
 
-
     @Override
     public void onDataPoint(DataPoint dataPoint) {
         DataType type = dataPoint.getDataType();
         Log.i(TAG, "Detected DataPoint type: " + type);
+        Log.i(TAG, "Detected DataPoint type - TYPE_STEP_COUNT_CUMULATIVE: " + DataType.TYPE_STEP_COUNT_CUMULATIVE);
 
         for (final Field field : type.getFields()) {
             final Value value = dataPoint.getValue(field);
             Log.i(TAG, "Detected DataPoint field: " + field.getName());
             Log.i(TAG, "Detected DataPoint value: " + value);
 
-
-       /*     activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mReactContext.getApplicationContext(), "Field: " + field.getName() + " Value: " + value, Toast.LENGTH_SHORT).show();
-                }
-            });*/
-
-            if(type.equals(DataType.TYPE_STEP_COUNT_CUMULATIVE)) {
+            if (type.equals(DataType.TYPE_STEP_COUNT_DELTA)) {
+                Log.i(TAG, "WYSYŁA EVENT!");
                 WritableMap map = Arguments.createMap();
                 map.putDouble("steps", value.asInt());
                 sendEvent(this.mReactContext, "StepChangedEvent", map);
             }
-
         }
     }
 
-
-    private void sendEvent(ReactContext reactContext,
-                           String eventName,
-                           @Nullable WritableMap params) {
-        reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
+    private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
     }
 }
