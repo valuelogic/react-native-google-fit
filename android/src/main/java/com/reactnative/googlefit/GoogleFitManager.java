@@ -207,6 +207,7 @@ public class GoogleFitManager implements
                 }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 Log.e(TAG, "Authorization - Cancel");
+                sendEvent(mReactContext, "GoogleFitAuthorizeCancel", null);
             }
         }
     }
