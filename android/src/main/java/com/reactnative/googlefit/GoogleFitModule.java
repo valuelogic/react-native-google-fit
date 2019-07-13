@@ -109,7 +109,7 @@ LifecycleEventListener {
         
         try {
             successCallback.invoke(mGoogleFitManager.getStepHistory().aggregateDataByDate((long)startDate, (long)endDate));
-        } catch (IllegalViewOperationException e) {
+        } catch (Exception e) {
             errorCallback.invoke(e.getMessage());
         }
     }
